@@ -1,18 +1,401 @@
-<!-- Add your HTML game content here -->
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quick Quiz Game</title>
-    <style>
-        body { font-family: Arial, sans-serif; }
-        h1 { color: #333; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>快问快答</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: #f8f9fa;
+  color: #1a1a1a;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.container {
+  width: 100%;
+  max-width: 700px;
+  padding: 40px 24px;
+  text-align: center;
+}
+h1 {
+  font-size: 3rem;
+  font-weight: 800;
+  margin-bottom: 32px;
+  letter-spacing: 4px;
+}
+.setup-section {
+  text-align: left;
+  margin-bottom: 32px;
+}
+.setup-section h2 {
+  font-size: 1.2rem;
+  margin-bottom: 16px;
+  color: #555;
+}
+.custom-input {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+  gap: 12px;
+}
+.custom-input label {
+  font-size: 1rem;
+  color: #666;
+  white-space: nowrap;
+}
+.custom-input input {
+  flex: 1;
+  padding: 10px 14px;
+  font-size: 1rem;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.custom-input input:focus {
+  border-color: #333;
+}
+.btn {
+  padding: 14px 36px;
+  font-size: 1.3rem;
+  font-weight: 700;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-primary {
+  background: #1a1a1a;
+  color: #fff;
+}
+.btn-primary:hover { background: #333; }
+.btn-primary:active { transform: scale(0.97); }
+.btn-secondary {
+  background: #e9ecef;
+  color: #333;
+}
+.btn-secondary:hover { background: #dee2e6; }
+.btn-secondary:active { transform: scale(0.97); }
+
+/* 游戏页面 */
+.game-page { display: none; }
+.progress {
+  font-size: 1.1rem;
+  color: #888;
+  margin-bottom: 20px;
+}
+.question-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 48px 32px;
+  margin-bottom: 36px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.question-text {
+  font-size: 2.4rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+.answer-text {
+  font-size: 1.4rem;
+  color: #888;
+  margin-top: 16px;
+  display: none;
+}
+.nav-buttons {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.btn-next {
+  padding: 16px 48px;
+  font-size: 1.5rem;
+}
+.btn-prev {
+  padding: 8px 20px;
+  font-size: 0.95rem;
+  background: transparent;
+  color: #999;
+  border: none;
+  cursor: pointer;
+}
+.btn-prev:hover { color: #555; }
+.reshuffle-link {
+  position: absolute;
+  top: 0;
+  right: 0;
+  font-size: 0.9rem;
+  color: #999;
+  cursor: pointer;
+  text-decoration: underline;
+}
+.reshuffle-link:hover { color: #555; }
+.btn-show-answer {
+  margin-top: 16px;
+  padding: 10px 24px;
+  font-size: 1rem;
+  background: transparent;
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #666;
+}
+.btn-show-answer:hover { border-color: #999; color: #333; }
+
+/* 结束页 */
+.end-page { display: none; }
+.end-page h2 { font-size: 2rem; margin-bottom: 24px; }
+</style>
 </head>
 <body>
-    <h1>Welcome to the Quick Quiz Game!</h1>
-    <p>Test your knowledge with this fun game.</p>
-    <!-- Game content goes here -->
+<div class="container">
+  <!-- 首页 -->
+  <div class="start-page" id="startPage">
+    <h1>快问快答</h1>
+    <div class="setup-section">
+      <h2>自定义题目（可选，将插入到第 3/5/7 题）</h2>
+      <div class="custom-input">
+        <label>第 3 题：</label>
+        <input type="text" id="custom3" placeholder="留空则使用随机题目">
+      </div>
+      <div class="custom-input">
+        <label>第 5 题：</label>
+        <input type="text" id="custom5" placeholder="留空则使用随机题目">
+      </div>
+      <div class="custom-input">
+        <label>第 7 题：</label>
+        <input type="text" id="custom7" placeholder="留空则使用随机题目">
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="startGame()">开始游戏</button>
+  </div>
+
+  <!-- 游戏页 -->
+  <div class="game-page" id="gamePage" style="position: relative;">
+    <a class="reshuffle-link" onclick="reshuffleQuestions()">换一组题目</a>
+    <div class="progress" id="progress"></div>
+    <div class="question-card">
+      <div>
+        <div class="question-text" id="questionText"></div>
+        <div class="answer-text" id="answerText"></div>
+      </div>
+    </div>
+    <button class="btn-show-answer" id="btnShowAnswer" onclick="toggleAnswer()">显示参考答案</button>
+    <div class="nav-buttons" style="margin-top: 24px;">
+      <button class="btn btn-primary btn-next" id="btnNext" onclick="nextQuestion()">下一题</button>
+      <button class="btn-prev" id="btnPrev" onclick="prevQuestion()">上一题</button>
+    </div>
+  </div>
+
+  <!-- 结束页 -->
+  <div class="end-page" id="endPage">
+    <h2>本轮结束 🎉</h2>
+    <button class="btn btn-primary" onclick="resetGame()">再来一轮</button>
+  </div>
+</div>
+
+<script>
+// 题库
+const questionBank = [
+  { q: "你的性别是？", a: "男/女" },
+  { q: "中国的首都是哪？", a: "北京" },
+  { q: "太阳从哪边升起？", a: "东边" },
+  { q: "斑马是什么颜色的条纹？", a: "黑白" },
+  { q: "老鼠最怕什么动物？", a: "猫" },
+  { q: "一天有几个小时？", a: "24" },
+  { q: "冰块是热的还是冷的？", a: "冷" },
+  { q: "小狗怎么叫？", a: "汪汪" },
+  { q: "剪刀石头布，石头赢什么？", a: "剪刀" },
+  { q: "键盘上最长的键叫什么？", a: "空格" },
+  { q: "天上的云是什么颜色？", a: "白色" },
+  { q: "手机没电了要干嘛？", a: "充电" },
+  { q: "肚子饿了要干嘛？", a: "吃饭" },
+  { q: "困了要干嘛？", a: "睡觉" },
+  { q: "下雨天出门要带什么？", a: "伞" },
+  { q: "绿灯亮了表示什么？", a: "通行" },
+  { q: "汽车通常有几个轮子？", a: "4个" },
+  { q: "我们的国宝是什么？", a: "大熊猫" },
+  { q: "一年有几个月？", a: "12个" },
+  { q: "鱼在哪里呼吸？", a: "水里" },
+  { q: "鸟用什么飞行？", a: "翅膀" },
+  { q: "西瓜的瓤一般是什么颜色？", a: "红色" },
+  { q: "今天星期几？", a: "按实际答" },
+  { q: "大熊猫的血是什么颜色？", a: "红色（容易顺口答黑白）" },
+  { q: "牛喝什么？", a: "水（容易顺口答牛奶）" },
+  { q: "哪���月有28天？", a: "每个月都有" },
+  { q: "铁锤砸鸡蛋为什么砸不破？", a: "铁锤怎么会破" },
+  { q: "树上10只鸟，开枪打死1只，还剩几只？", a: "0只，吓跑了" },
+  { q: "你名字的最后一个字是什么？", a: "突然打乱节奏" },
+  { q: "上次说谎是哪一天？！", a: "—" },
+  { q: "你微信置顶的第二个人是谁？！", a: "—" },
+  { q: "昨晚你几点睡的？！", a: "—" },
+  { q: "你最近买的最贵的东西花了多少钱？！", a: "—" },
+  { q: "朋友圈屏蔽了几个家人/同事？！", a: "—" },
+  { q: "咖啡还是喝茶？", a: "按实际答" },
+  { q: "苹果还是安卓？", a: "按实际答" },
+  { q: "喜欢吃甜的还是辣的？", a: "按实际答" },
+  { q: "洗澡先洗头还是先洗身子？", a: "按实际答" },
+  { q: "睡觉打呼噜吗？", a: "打/不打" },
+  { q: "喜欢哪个季节？", a: "按实际答" },
+  { q: "出门穿运动鞋还是皮鞋？", a: "按实际答" },
+  { q: "点外卖多还是自己做饭多？", a: "按实际答" },
+  { q: "喜欢猫还是喜欢狗？", a: "按实际答" },
+  { q: "每天看手机超过5小时吗？", a: "是/否" },
+  { q: "早上起床会赖床吗？", a: "会/不会" },
+  { q: "朋友圈设置三天可见了吗？", a: "是/否" },
+  { q: "微信未读消息多吗？", a: "多/不多" },
+  { q: "喜欢早起还是熬夜？", a: "按实际答" },
+  { q: "剪指甲会剪得很短吗？", a: "会/不会" },
+  { q: "挤牙膏从中间挤还是底部挤？", a: "按实际答" },
+  { q: "喝奶茶加不加珍珠？", a: "加/不加" },
+  { q: "买东西喜欢看评价吗？", a: "喜欢/不喜欢" },
+  { q: "坐电梯会狂按关门键吗？", a: "会/不会" },
+  { q: "遇到熟人会假装没看见吗？", a: "会/不会" },
+  { q: "喜欢用微信语音还是打字？", a: "按实际答" },
+  { q: "手机电量低于多少会焦虑？", a: "按实际答" },
+  { q: "听歌喜欢单曲循环吗？", a: "喜欢/不喜欢" },
+  { q: "吃饭前会先拍照吗？", a: "会/不会" },
+  { q: "今天心情好吗？", a: "好/不好" },
+  { q: "抛硬币连续三次正面，第四次正面的概率是多少？", a: "50%（容易顺口答别的）" },
+  { q: "你左手边现在有什么东西？", a: "强迫转移视线" },
+  { q: "一公斤铁和一公斤棉花哪个重？", a: "一样重" },
+  { q: "你最近一次大笑是因为什么？", a: "强迫情绪回忆" },
+  { q: "你今天穿的袜子是什么颜色？", a: "强迫阻断视觉记忆" }
+];
+
+let questions = [];
+let currentIndex = 0;
+let answerVisible = false;
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function startGame() {
+  const custom3 = document.getElementById('custom3').value.trim();
+  const custom5 = document.getElementById('custom5').value.trim();
+  const custom7 = document.getElementById('custom7').value.trim();
+
+  // 计算需要从题库随机抽取的数量
+  const customSlots = [custom3, custom5, custom7].filter(Boolean).length;
+  const needRandom = 10 - customSlots;
+
+  // 随机抽取题目
+  const randomQuestions = shuffle(questionBank).slice(0, needRandom);
+
+  // 组装 10 题
+  questions = [];
+  let randomIdx = 0;
+
+  for (let i = 1; i <= 10; i++) {
+    if (i === 3 && custom3) {
+      questions.push({ q: custom3, a: "—" });
+    } else if (i === 5 && custom5) {
+      questions.push({ q: custom5, a: "—" });
+    } else if (i === 7 && custom7) {
+      questions.push({ q: custom7, a: "—" });
+    } else {
+      questions.push(randomQuestions[randomIdx++]);
+    }
+  }
+
+  currentIndex = 0;
+  answerVisible = false;
+
+  document.getElementById('startPage').style.display = 'none';
+  document.getElementById('gamePage').style.display = 'block';
+  document.getElementById('endPage').style.display = 'none';
+
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = questions[currentIndex];
+  document.getElementById('progress').textContent = `第 ${currentIndex + 1} / 10 题`;
+  document.getElementById('questionText').textContent = q.q;
+  document.getElementById('answerText').textContent = `参考答案：${q.a}`;
+  document.getElementById('answerText').style.display = answerVisible ? 'block' : 'none';
+  document.getElementById('btnShowAnswer').textContent = answerVisible ? '隐藏参考答案' : '显示参考答案';
+
+  document.getElementById('btnPrev').style.display = currentIndex === 0 ? 'none' : 'inline-block';
+
+  if (currentIndex === 9) {
+    document.getElementById('btnNext').textContent = '完成';
+  } else {
+    document.getElementById('btnNext').textContent = '下一题';
+  }
+}
+
+function toggleAnswer() {
+  answerVisible = !answerVisible;
+  document.getElementById('answerText').style.display = answerVisible ? 'block' : 'none';
+  document.getElementById('btnShowAnswer').textContent = answerVisible ? '隐藏参考答案' : '显示参考答案';
+}
+
+function nextQuestion() {
+  if (currentIndex >= 9) {
+    document.getElementById('gamePage').style.display = 'none';
+    document.getElementById('endPage').style.display = 'block';
+    return;
+  }
+  currentIndex++;
+  renderQuestion();
+}
+
+function prevQuestion() {
+  if (currentIndex > 0) {
+    currentIndex--;
+    renderQuestion();
+  }
+}
+
+function resetGame() {
+  document.getElementById('startPage').style.display = 'block';
+  document.getElementById('gamePage').style.display = 'none';
+  document.getElementById('endPage').style.display = 'none';
+}
+
+function reshuffleQuestions() {
+  const custom3 = document.getElementById('custom3').value.trim();
+  const custom5 = document.getElementById('custom5').value.trim();
+  const custom7 = document.getElementById('custom7').value.trim();
+
+  const customSlots = [custom3, custom5, custom7].filter(Boolean).length;
+  const needRandom = 10 - customSlots;
+  const randomQuestions = shuffle(questionBank).slice(0, needRandom);
+
+  questions = [];
+  let randomIdx = 0;
+  for (let i = 1; i <= 10; i++) {
+    if (i === 3 && custom3) {
+      questions.push({ q: custom3, a: "—" });
+    } else if (i === 5 && custom5) {
+      questions.push({ q: custom5, a: "—" });
+    } else if (i === 7 && custom7) {
+      questions.push({ q: custom7, a: "—" });
+    } else {
+      questions.push(randomQuestions[randomIdx++]);
+    }
+  }
+
+  currentIndex = 0;
+  answerVisible = false;
+  renderQuestion();
+}
+</script>
 </body>
 </html>
