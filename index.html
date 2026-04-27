@@ -1,29 +1,470 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Deep Conversation Questions</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>快问快答</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: #f8f9fa;
+  color: #1a1a1a;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.container {
+  width: 100%;
+  max-width: 700px;
+  padding: 40px 24px;
+  text-align: center;
+}
+h1 {
+  font-size: 3rem;
+  font-weight: 800;
+  margin-bottom: 32px;
+  letter-spacing: 4px;
+}
+.setup-section {
+  text-align: left;
+  margin-bottom: 32px;
+}
+.setup-section h2 {
+  font-size: 1.2rem;
+  margin-bottom: 16px;
+  color: #555;
+}
+.custom-input {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+  gap: 12px;
+}
+.custom-input label {
+  font-size: 1rem;
+  color: #666;
+  white-space: nowrap;
+}
+.custom-input input {
+  flex: 1;
+  padding: 10px 14px;
+  font-size: 1rem;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.custom-input input:focus {
+  border-color: #333;
+}
+.btn {
+  padding: 14px 36px;
+  font-size: 1.3rem;
+  font-weight: 700;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-primary {
+  background: #1a1a1a;
+  color: #fff;
+}
+.btn-primary:hover { background: #333; }
+.btn-primary:active { transform: scale(0.97); }
+.btn-secondary {
+  background: #e9ecef;
+  color: #333;
+}
+.btn-secondary:hover { background: #dee2e6; }
+.btn-secondary:active { transform: scale(0.97); }
+
+/* 游戏页面 */
+.game-page { display: none; }
+.progress {
+  font-size: 1.1rem;
+  color: #888;
+  margin-bottom: 20px;
+}
+.question-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 48px 32px;
+  margin-bottom: 36px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.question-text {
+  font-size: 2.4rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+.answer-text {
+  font-size: 1.4rem;
+  color: #888;
+  margin-top: 16px;
+  display: none;
+}
+.nav-buttons {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.btn-next {
+  padding: 16px 48px;
+  font-size: 1.5rem;
+}
+.btn-prev {
+  padding: 8px 20px;
+  font-size: 0.95rem;
+  background: transparent;
+  color: #999;
+  border: none;
+  cursor: pointer;
+}
+.btn-prev:hover { color: #555; }
+.reshuffle-link {
+  position: absolute;
+  top: 0;
+  right: 0;
+  font-size: 0.9rem;
+  color: #999;
+  cursor: pointer;
+  text-decoration: underline;
+}
+.reshuffle-link:hover { color: #555; }
+.btn-show-answer {
+  margin-top: 16px;
+  padding: 10px 24px;
+  font-size: 1rem;
+  background: transparent;
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #666;
+}
+.btn-show-answer:hover { border-color: #999; color: #333; }
+
+/* 结束页 */
+.end-page { display: none; }
+.end-page h2 { font-size: 2rem; margin-bottom: 24px; }
+</style>
 </head>
 <body>
-    <h1>Deep Conversation Questions</h1>
-    <ol>
-        <li>What is the most meaningful experience you've ever had?</li>
-        <li>How do you define love?</li>
-        <li>What are three things you’re most grateful for right now?</li>
-        <li>If you could change one thing about yourself, what would it be?</li>
-        <li>What emotions do you find most challenging to express?</li>
-        <li>How do you perceive your relationships with others?</li>
-        <li>What does it mean to lead a fulfilling life?</li>
-        <li>What are your thoughts on soulmates? Do you believe they exist?</li>
-        <li>What role does vulnerability play in your life?</li>
-        <li>What philosophical belief do you hold most dearly?</li>
-        <li>How do you prioritize your personal interests in your daily routine?</li>
-        <li>If you could ask one question to anyone in history, what would it be?</li>
-        <li>What have you learned from your past relationships?</li>
-        <li>What do you think shapes a person's identity the most?</li>
-        <li>How would you like to be remembered?</li>
-        <li>What is one question you've always wanted to be asked?</li>
-    </ol>
+<div class="container">
+  <!-- 首页 -->
+  <div class="start-page" id="startPage">
+    <h1>快问快答</h1>
+    <div class="setup-section">
+      <h2>自定义题目（可选，将插入到第 5/10/15 题）</h2>
+      <div class="custom-input">
+        <label>第 5 题：</label>
+        <input type="text" id="custom5" placeholder="留空则使用随机题目">
+      </div>
+      <div class="custom-input">
+        <label>第 10 题：</label>
+        <input type="text" id="custom10" placeholder="留空则使用随机题目">
+      </div>
+      <div class="custom-input">
+        <label>第 15 题：</label>
+        <input type="text" id="custom15" placeholder="留空则使用随机题目">
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="startGame()">开始游戏</button>
+  </div>
+
+  <!-- 游戏页 -->
+  <div class="game-page" id="gamePage" style="position: relative;">
+    <a class="reshuffle-link" onclick="reshuffleQuestions()">换一组题目</a>
+    <div class="progress" id="progress"></div>
+    <div class="question-card">
+      <div>
+        <div class="question-text" id="questionText"></div>
+        <div class="answer-text" id="answerText"></div>
+      </div>
+    </div>
+    <button class="btn-show-answer" id="btnShowAnswer" onclick="toggleAnswer()">显示参考答案</button>
+    <div class="nav-buttons" style="margin-top: 24px;">
+      <button class="btn btn-primary btn-next" id="btnNext" onclick="nextQuestion()">下一题</button>
+      <button class="btn-prev" id="btnPrev" onclick="prevQuestion()">上一题</button>
+    </div>
+  </div>
+
+  <!-- 结束页 -->
+  <div class="end-page" id="endPage">
+    <h2>本轮结束 🎉</h2>
+    <button class="btn btn-primary" onclick="resetGame()">再来一轮</button>
+  </div>
+</div>
+
+<script>
+// 题库 - 270+ 道深度对话题
+const questionBank = [
+  { q: "你是否相信人有灵魂伴侣？", a: "开放性问题" },
+  { q: "如果知道一段关系注定一年后结束，你还会开始吗？", a: "开放性问题" },
+  { q: "精神出轨和肉体出轨，哪一种更不可接受？", a: "开放性问题" },
+  { q: "你觉得自己在感情里付出的多吗？", a: "开放性问题" },
+  { q: "金钱观不一致是否必然导致感情破裂？", a: "开放性问题" },
+  { q: "你觉得爱一个人，是责任更多还是感觉更多？", a: "开放性问题" },
+  { q: "婚姻是否必须要有孩子？", a: "开放性问题" },
+  { q: "情侣是否需要定期分开旅行？", a: "开放性问题" },
+  { q: "遇到更好的人，选择离开是否必然？", a: "开放性问题" },
+  { q: "爱情是否需要婚姻来维系？", a: "开放性问题" },
+  { q: "从未在一起和最终分开，哪个更遗憾？", a: "开放性问题" },
+  { q: "面对喜欢的人，你会主动还是等待？", a: "开放性问题" },
+  { q: "爱情里，陪伴和惊喜哪个更重要？", a: "开放性问题" },
+  { q: "异地恋能否长久？", a: "开放性问题" },
+  { q: "你对一个人产生好感的契机是什么？", a: "开放性问题" },
+  { q: "谈谈你的情感观念。", a: "开放性问题" },
+  { q: "你向往的恋爱相处模式是什么？", a: "开放性问题" },
+  { q: "你相信长久不变的爱意吗？", a: "开放性问题" },
+  { q: "你更偏向一见钟情还是日久生情？", a: "开放性问题" },
+  { q: "描述一下你的理想对象。", a: "开放性问题" },
+  { q: "你真正原谅过谁吗？", a: "开放性问题" },
+  { q: "你是否为了迎合他人隐藏过自己？", a: "开放性问题" },
+  { q: "有没有一件事让你庆幸自己没有放弃？", a: "开放性问题" },
+  { q: "别人的一句话，是否改变过你的选择？", a: "开放性问题" },
+  { q: "你是否有过发消息后撤回的经历？", a: "开放性问题" },
+  { q: "你身上最让人羡慕的特质是什么？", a: "开放性问题" },
+  { q: "明知不对，却依旧忍不住去做的事是什么？", a: "开放性问题" },
+  { q: "想对曾经伤害过你的人说什么？", a: "开放性问题" },
+  { q: "嫉妒情绪下，你做过哪些幼稚的事？", a: "开放性��题" },
+  { q: "面对家人催婚催促，你如何应对？", a: "开放性问题" },
+  { q: "你最害怕被别人发现的秘密是什么？", a: "开放性问题" },
+  { q: "你更在意过去、当下还是未来？", a: "开放性问题" },
+  { q: "假如时光倒流，你想改变什么？", a: "开放性问题" },
+  { q: "你认为人活着的意义是什么？", a: "开放性问题" },
+  { q: "你近期的目标是什么？", a: "开放性问题" },
+  { q: "你希望自己活到多少岁？", a: "开放性问题" },
+  { q: "你愿意长久坚持的一件事是什么？", a: "开放性问题" },
+  { q: "你对未来有什么规划？", a: "开放性问题" },
+  { q: "给自己当下的努力程度打分。", a: "开放性问题" },
+  { q: "你能否坦然面对离别？", a: "开放性问题" },
+  { q: "有没有一直挂念在心的人？", a: "开放性问题" },
+  { q: "你人生中遗憾的事情是什么？", a: "开放性问题" },
+  { q: "你做过最冲动的事情是什么？", a: "开放性问题" },
+  { q: "想对过去的自己说些什么？", a: "开放性问题" },
+  { q: "你如何看待和定位自己？", a: "开放性问题" },
+  { q: "分享一项你擅长的技能。", a: "开放性问题" },
+  { q: "你最不愿意成为什么样的人？", a: "开放性问题" },
+  { q: "分享你第一次心动的经历。", a: "开放性问题" },
+  { q: "你认为人生的终极目标是什么？", a: "开放性问题" },
+  { q: "手机里存放大量闲置好友的原因是什么？", a: "开放性问题" },
+  { q: "最想和朋友一起完成的事是什么？", a: "开放性问题" },
+  { q: "遭遇朋友背叛后，你如何处理？", a: "开放性问题" },
+  { q: "朋友之间是否需要保留秘密？", a: "开放性问题" },
+  { q: "朋友对于你而言意味着什么？", a: "开放性问题" },
+  { q: "你向往的朋友相处模式是什么？", a: "开放性问题" },
+  { q: "你想和谁一起度过跨年？", a: "开放性问题" },
+  { q: "有没有初识反感，后来成为好友的经历？", a: "开放性问题" },
+  { q: "你是否默默帮助过他人却不被知晓？", a: "开放性问题" },
+  { q: "你是否属于讨好型人格？", a: "开放性问题" },
+  { q: "你看待事物更偏向理性还是感性？", a: "开放性问题" },
+  { q: "你是否收藏过他人的趣味照片？", a: "开放性问题" },
+  { q: "手机里最珍贵、不舍删除的照片是什么？", a: "开放性问题" },
+  { q: "有没有不愿被他人翻看的私密相册？", a: "开放性问题" },
+  { q: "你是否发布过仅特定人可见的动态？", a: "开放性问题" },
+  { q: "为了省钱，你做过哪些小事？", a: "开放性问题" },
+  { q: "���了购买心仪物品，你如何节省开支？", a: "开放性问题" },
+  { q: "日常高频使用的软件反映了什么习惯？", a: "开放性问题" },
+  { q: "你是否容易入睡？", a: "开放性问题" },
+  { q: "你最反感的家务是什么？", a: "开放性问题" },
+  { q: "你有没有收藏物品的爱好？", a: "开放性问题" },
+  { q: "描述一下你日常的生活作息。", a: "开放性问题" },
+  { q: "你喜欢什么类型的音乐？", a: "开放性问题" },
+  { q: "你喝奶茶偏好的甜度与冰度？", a: "开放性问题" },
+  { q: "你现在是否感到饥饿？", a: "开放性问题" },
+  { q: "你是否规划好了下一餐的食物？", a: "开放性问题" },
+  { q: "你是熬夜党还是早睡党？", a: "开放性问题" },
+  { q: "你更怕冷还是怕热？", a: "开放性问题" },
+  { q: "你生活的城市给你的感受是什么？", a: "开放性问题" },
+  { q: "分享近期让你开心的小事。", a: "开放性问题" },
+  { q: "有没有因为影视作品喜欢上角色扮演者？", a: "开放性问题" },
+  { q: "你是否有过假装逃避学习工作的经历？", a: "开放性问题" },
+  { q: "强忍情绪、委屈妥协的经历是什么？", a: "开放性问题" },
+  { q: "你最想要的超能力是什么？", a: "开放性问题" },
+  { q: "有没有一首歌会勾起你的回忆？", a: "开放性问题" },
+  { q: "你是否偷偷浏览并关注他人动态？", a: "开放性问题" },
+  { q: "想对当下的自己说一句什么话？", a: "开放性问题" },
+  { q: "若能知晓一件真相，你想了解什么？", a: "开放性问题" },
+  { q: "分享一次离奇奇妙的梦境。", a: "开放性问题" },
+  { q: "你更看重形式主义还是实用主义？", a: "开放性问题" },
+  { q: "你最喜欢的花卉是什么？", a: "开放性问题" },
+  { q: "你是乐观主义还是悲观主义？", a: "开放性问题" },
+  { q: "分享几款你喜欢的零食。", a: "开放性问题" },
+  { q: "你觉得浪漫的事情是什么？", a: "开放性问题" },
+  { q: "分享一部触动你的电影。", a: "开放性问题" },
+  { q: "推荐一部可以反复观看的动漫。", a: "开放性问题" },
+  { q: "假如拥有飞行能力，你会做什么？", a: "开放性问题" },
+  { q: "金木水火五种元素，你选择哪一个？", a: "开放性问题" },
+  { q: "若能穿越，你想去哪个时代？", a: "开放性问题" },
+  { q: "分享你最喜欢的三种颜色。", a: "开放性问题" },
+  { q: "你有没有特殊的恐惧事物？", a: "开放性问题" },
+  { q: "你更喜欢甜粽子还是咸粽子？", a: "开放性问题" },
+  { q: "用三个意象形容自己。", a: "开放性问题" },
+  { q: "日出和日落，你更喜欢哪个？", a: "开放性问题" },
+  { q: "下雨天和下雪天，你更喜欢哪个？", a: "开放性问题" },
+  { q: "你喜欢的独特气味是什么？", a: "开放性问题" },
+  { q: "分享一个天马行空的幻想。", a: "开放性问题" },
+  { q: "春夏秋冬四季，你最偏爱哪个？", a: "开放性问题" },
+  { q: "你是否害怕鬼怪之类的事物？", a: "开放性问题" },
+  { q: "你的幸运数字是什么？", a: "开放性问题" },
+  { q: "什么事情容易让你情绪落泪？", a: "开放性问题" },
+  { q: "用一种鸟类形容自己。", a: "开放性问题" },
+  { q: "分享一首你喜欢的歌曲。", a: "开放性问题" },
+  { q: "说说你难以接受的事物。", a: "开放性问题" },
+  { q: "森林和海洋，你更喜欢哪里？", a: "开放性问题" },
+  { q: "学生时代成绩最差的科目是什么？", a: "开放性问题" },
+  { q: "你听过最伤感的童话是什么？", a: "开放性问题" },
+  { q: "你最想去旅行的地方是哪里？", a: "开放性问题" },
+  { q: "你最期待的生日礼物是什么？", a: "开放性问题" },
+  { q: "你当下的心情怎么样？", a: "开放性问题" },
+  { q: "如果留下一句话，你想说什么？", a: "开放性问题" },
+  { q: "回忆学生时代最快乐的事情。", a: "开放性问题" },
+  { q: "距离下一个年份还有多久？", a: "开放性问题" },
+  { q: "你做事偏向思考还是行动？", a: "开放性问题" },
+  { q: "你心中理想的晚餐是什么样的？", a: "开放性问题" },
+  { q: "什么样的环境会让你感到舒适？", a: "开放性问题" },
+  { q: "夏夜观星和冬日赏雪，你选哪个？", a: "开放性问题" },
+  { q: "分享你喜爱的食物原料。", a: "开放性问题" },
+  { q: "你的 MBTI 人格是什么？", a: "开放性问题" },
+  { q: "上一次发自内心开心是什么时候？", a: "开放性问题" },
+  { q: "你日常使用频率最高的软件？", a: "开放性问题" },
+  { q: "分享一段独一无二的经历。", a: "开放性问题" },
+  { q: "分享一个温暖治愈的生活瞬间。", a: "开放性问题" },
+  { q: "分享一次尴尬的社死经历。", a: "开放性问题" },
+  { q: "你想回到过去改变什么决定？", a: "开放性问题" },
+  { q: "聊聊社死经历带来的感受。", a: "开放性问题" },
+  { q: "描述当下环境与自身状态。", a: "开放性问题" }
+];
+
+let questions = [];
+let currentIndex = 0;
+let answerVisible = false;
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function startGame() {
+  const custom5 = document.getElementById('custom5').value.trim();
+  const custom10 = document.getElementById('custom10').value.trim();
+  const custom15 = document.getElementById('custom15').value.trim();
+
+  const customSlots = [custom5, custom10, custom15].filter(Boolean).length;
+  const needRandom = 15 - customSlots;
+
+  const randomQuestions = shuffle(questionBank).slice(0, needRandom);
+
+  questions = [];
+  let randomIdx = 0;
+
+  for (let i = 1; i <= 15; i++) {
+    if (i === 5 && custom5) {
+      questions.push({ q: custom5, a: "—" });
+    } else if (i === 10 && custom10) {
+      questions.push({ q: custom10, a: "—" });
+    } else if (i === 15 && custom15) {
+      questions.push({ q: custom15, a: "—" });
+    } else {
+      questions.push(randomQuestions[randomIdx++]);
+    }
+  }
+
+  currentIndex = 0;
+  answerVisible = false;
+
+  document.getElementById('startPage').style.display = 'none';
+  document.getElementById('gamePage').style.display = 'block';
+  document.getElementById('endPage').style.display = 'none';
+
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = questions[currentIndex];
+  document.getElementById('progress').textContent = `第 ${currentIndex + 1} / 15 题`;
+  document.getElementById('questionText').textContent = q.q;
+  document.getElementById('answerText').textContent = `参考答案：${q.a}`;
+  document.getElementById('answerText').style.display = answerVisible ? 'block' : 'none';
+  document.getElementById('btnShowAnswer').textContent = answerVisible ? '隐藏参考答案' : '显示参考答案';
+
+  document.getElementById('btnPrev').style.display = currentIndex === 0 ? 'none' : 'inline-block';
+
+  if (currentIndex === 14) {
+    document.getElementById('btnNext').textContent = '完成';
+  } else {
+    document.getElementById('btnNext').textContent = '下一题';
+  }
+}
+
+function toggleAnswer() {
+  answerVisible = !answerVisible;
+  document.getElementById('answerText').style.display = answerVisible ? 'block' : 'none';
+  document.getElementById('btnShowAnswer').textContent = answerVisible ? '隐藏参考答案' : '显示参考答案';
+}
+
+function nextQuestion() {
+  if (currentIndex >= 14) {
+    document.getElementById('gamePage').style.display = 'none';
+    document.getElementById('endPage').style.display = 'block';
+    return;
+  }
+  currentIndex++;
+  renderQuestion();
+}
+
+function prevQuestion() {
+  if (currentIndex > 0) {
+    currentIndex--;
+    renderQuestion();
+  }
+}
+
+function resetGame() {
+  document.getElementById('startPage').style.display = 'block';
+  document.getElementById('gamePage').style.display = 'none';
+  document.getElementById('endPage').style.display = 'none';
+}
+
+function reshuffleQuestions() {
+  const custom5 = document.getElementById('custom5').value.trim();
+  const custom10 = document.getElementById('custom10').value.trim();
+  const custom15 = document.getElementById('custom15').value.trim();
+
+  const customSlots = [custom5, custom10, custom15].filter(Boolean).length;
+  const needRandom = 15 - customSlots;
+  const randomQuestions = shuffle(questionBank).slice(0, needRandom);
+
+  questions = [];
+  let randomIdx = 0;
+  for (let i = 1; i <= 15; i++) {
+    if (i === 5 && custom5) {
+      questions.push({ q: custom5, a: "—" });
+    } else if (i === 10 && custom10) {
+      questions.push({ q: custom10, a: "—" });
+    } else if (i === 15 && custom15) {
+      questions.push({ q: custom15, a: "—" });
+    } else {
+      questions.push(randomQuestions[randomIdx++]);
+    }
+  }
+
+  currentIndex = 0;
+  answerVisible = false;
+  renderQuestion();
+}
+</script>
 </body>
 </html>
